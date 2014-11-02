@@ -1,0 +1,85 @@
+/* 
+ * SQLite Converter
+ *
+ * Copyright 2011 Wappworks Studios
+ */
+
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Vector;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+
+public refines class SqliteConverter {
+
+
+	private Boolean exportToJson(File jsonFile,
+			SqliteConverterExportConfig config) {
+		logWriter.logAppend("JSON export commencing");
+
+		// Handle the export...
+		try {
+			FileWriter fStream = new FileWriter(jsonFile);
+			BufferedWriter fOut = new BufferedWriter(fStream);
+			JSONObject jsonOut = new JSONObject();
+
+			exportTablesToJson(jsonOut, config);
+			fOut.write(jsonOut.toString(2));
+
+			fOut.close();
+			fStream.close();
+		} catch (IOException e) {
+			logWriter
+					.logAppend(String
+							.format("I/O error encountered trying to output database to file '%1$s'",
+									jsonFile.getAbsolutePath()));
+			return (false);
+		} catch (JSONException e) {
+			logWriter.logAppend(String.format(
+					"Error encoding database file '%1$s' into JSON",
+					jsonFile.getAbsolutePath()));
+		}
+		logWriter.logAppend("JSON export complete");
+		return (true);
+	}
+
+	private void exportTablesToJson(JSONObject jsonOut,
+			SqliteConverterExportConfig config) {
+		for (int i = 0; i < tableHandlers.size(); i++)
+		// for( Object tableHandler : tableHandlers )
+		{
+			Object tableHandler = tableHandlers.elementAt(i);
+			try {
+				logWriter.logAppend(String.format(
+						"Exporting contents for table '%1$s'",
+						((SqliteTableHandler) tableHandler).getName()));
+				((SqliteTableHandler) tableHandler).exportTableToJson(jsonOut,
+						config);
+			} catch (SQLException e) {
+				logWriter.logAppend(String.format(
+						"SQL exception occured trying to export table '%1$s'",
+						((SqliteTableHandler) tableHandler).getName()));
+			}
+		}
+	}
+
+	public Boolean export(File outFile, int format,
+			SqliteConverterExportConfig config) {
+		Super(File,int,SqliteConverterExportConfig).export(outFile,format,config);
+		if (format == JSON)
+			return (exportToJson(outFile, config));
+		else
+			return false;
+	}
+	
+}

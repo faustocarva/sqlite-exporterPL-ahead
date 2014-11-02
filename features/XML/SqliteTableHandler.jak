@@ -1,0 +1,72 @@
+/* 
+ * SQLite Table Handler
+ *
+ * Copyright 2011 Wappworks Studios
+ */
+
+
+import java.io.IOException;
+import java.io.Writer;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+
+public refines class SqliteTableHandler {
+
+	public Boolean exportTableToXml(Writer fOut, String indent,
+			SqliteConverterExportConfig config) throws SQLException,
+			IOException {
+		List excludeList = config.getExcludeList();
+		if (excludeList.contains(tableName))
+			return (true);
+		if (excludeList.size() == 0)
+			excludeList = null;
+
+		fOut.write(String.format("%1$s<%2$s>\n", indent, tableName));
+
+		String recordIndent = indent + "\t";
+		exportRecordsToXml(fOut, recordIndent, excludeList);
+
+		fOut.write(String.format("%1$s</%2$s>\n", indent, tableName));
+		return (true);
+	}
+
+	private void exportRecordsToXml(Writer fOut, String indent, List excludeList)
+			throws SQLException, IOException {
+		Statement dbStat = dbConn.createStatement();
+		ResultSet rs = dbStat.executeQuery(String.format(
+				"select * from '%1$s';", tableName));
+		try {
+			while (rs.next()) {
+				fOut.write(String.format("%1$s<%2$sRecord>\n", indent,
+						tableName));
+				Iterator it = fieldInfo.entrySet().iterator();
+				while (it.hasNext()) {
+					// for (Object entry : fieldInfo.entrySet()) {
+					Object entry = it.next();
+					String fieldName = (String) ((Map.Entry) entry).getKey();
+
+					if (excludeList != null) {
+						String fieldRefName = tableName + "." + fieldName;
+						if (excludeList.contains(fieldRefName))
+							continue;
+					}
+
+					fOut.write(String.format("%1$s\t<%2$s>%3$s</%2$s>\n",
+							indent, fieldName, rs.getString(fieldName)));
+				}
+				fOut.write(String.format("%1$s</%2$sRecord>\n", indent,
+						tableName));
+			}
+		} finally {
+			rs.close();
+		}
+	}
+
+}

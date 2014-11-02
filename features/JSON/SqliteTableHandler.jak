@@ -1,0 +1,185 @@
+/* 
+ * SQLite Table Handler
+ *
+ * Copyright 2011 Wappworks Studios
+ */
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+public refines class SqliteTableHandler {
+
+	private void addLogText(String logText) {
+		logWriter.logAppend(logText);
+	}
+	
+	public Boolean exportTableToJson(JSONObject jsonOut,
+			SqliteConverterExportConfig config) throws SQLException {
+		List excludeList = config.getExcludeList();
+		if (excludeList.contains(tableName))
+			return (true);
+		if (excludeList.size() == 0)
+			excludeList = null;
+
+		String primaryKey = (String) config.getTablePrimaryKeys()
+				.get(tableName);
+		if (primaryKey != null && !fieldInfo.containsKey(primaryKey))
+			primaryKey = null;
+
+		Object jsonRecords = null;
+		if (primaryKey == null)
+			jsonRecords = getRecordsAsJsonArray(excludeList);
+		else
+			jsonRecords = getRecordsAsJsonObject(excludeList, primaryKey);
+
+		if (jsonRecords != null) {
+			try {
+				jsonOut.put(tableName, jsonRecords);
+			} catch (JSONException e) {
+				addLogText(String
+						.format("Error adding table '%1$s' to JSON output. Skipping record...",
+								tableName));
+			}
+		}
+
+		return (true);
+	}
+
+	private JSONArray getRecordsAsJsonArray(List excludeList)
+			throws SQLException {
+		Statement dbStat = dbConn.createStatement();
+		ResultSet rs = dbStat.executeQuery(String.format(
+				"select * from '%1$s';", tableName));
+
+		JSONArray jsonRecords = new JSONArray();
+		try {
+			while (rs.next()) {
+				Boolean saveRecord = true;
+				JSONObject jsonRecord = new JSONObject();
+
+				Iterator it = fieldInfo.entrySet().iterator();
+				while (it.hasNext()) {
+					// for (Object entry : fieldInfo.entrySet()) {
+					Object entry = it.next();
+					String fieldName = (String) ((Map.Entry) entry).getKey();
+
+					if (excludeList != null) {
+						String fieldRefName = tableName + "." + fieldName;
+						if (excludeList.contains(fieldRefName))
+							continue;
+					}
+
+					try {
+						addFieldToJson(jsonRecord, rs, entry);
+					} catch (JSONException e) {
+						addLogText(String
+								.format("Error adding field '%2$s' in table '%1$s' to JSON output for record [%3$d]. Skipping record...",
+										tableName,
+										(String) ((Map.Entry) entry).getKey(),
+										rs.getRow()));
+						saveRecord = false;
+					}
+				}
+
+				if (saveRecord)
+					jsonRecords.put(jsonRecord);
+			}
+		} finally {
+			rs.close();
+		}
+
+		return (jsonRecords);
+	}
+
+	private JSONObject getRecordsAsJsonObject(List excludeList,
+			String primaryKey) throws SQLException {
+		Statement dbStat = dbConn.createStatement();
+		ResultSet rs = dbStat.executeQuery(String.format(
+				"select * from '%1$s';", tableName));
+
+		JSONObject jsonRecords = new JSONObject();
+		int recordIndex = 0;
+		try {
+			while (rs.next()) {
+				Boolean saveRecord = true;
+				JSONObject jsonRecord = new JSONObject();
+				Iterator it = fieldInfo.entrySet().iterator();
+				while (it.hasNext()) {
+					// for (Object entry : fieldInfo.entrySet()) {
+					Object entry = it.next();
+					String fieldName = (String) ((Map.Entry) entry).getKey();
+
+					if (fieldName.equals(primaryKey))
+						continue;
+
+					if (excludeList != null) {
+						String fieldRefName = tableName + "." + fieldName;
+						if (excludeList.contains(fieldRefName))
+							continue;
+					}
+
+					try {
+						addFieldToJson(jsonRecord, rs, entry);
+					} catch (JSONException e) {
+						addLogText(String
+								.format("Error adding field '%2$s' in table '%1$s' to JSON output for record [%3$d]. Skipping record...",
+										tableName,
+										(String) ((Map.Entry) entry).getKey(),
+										rs.getRow()));
+						saveRecord = false;
+					}
+				}
+
+				if (saveRecord) {
+					String recordName = rs.getString(primaryKey);
+					if (recordName.length() <= 0)
+						recordName = "undef_" + recordIndex;
+					if (jsonRecords.has(recordName))
+						recordName += "_dupe_" + recordIndex;
+
+					try {
+						jsonRecords.put(recordName, jsonRecord);
+					} catch (JSONException e) {
+						addLogText(String
+								.format("Error adding record '%2$s' in table '%1$s' to JSON output. Skipping record...",
+										tableName, recordName));
+					}
+				}
+
+				recordIndex++;
+			}
+		} finally {
+			rs.close();
+		}
+
+		return (jsonRecords);
+	}
+
+	private void addFieldToJson(JSONObject jsonDest, ResultSet rs,
+			Object fieldInfo) throws JSONException, SQLException {
+		String fieldName = (String) ((Map.Entry) fieldInfo).getKey();
+		switch ((Integer) (((Map.Entry) fieldInfo).getValue())) {
+		case INTEGER:
+			jsonDest.put(fieldName, rs.getLong(fieldName));
+			break;
+
+		case FLOAT:
+			jsonDest.put(fieldName, rs.getDouble(fieldName));
+			break;
+
+		default:
+			jsonDest.put(fieldName, rs.getString(fieldName));
+			break;
+		}
+	}
+}

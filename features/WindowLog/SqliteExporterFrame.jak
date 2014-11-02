@@ -1,0 +1,39 @@
+/* 
+ * SQLite Exporter GUI
+ *
+ * Copyright 2011 Wappworks Studios
+ */
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Toolkit;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
+
+
+public refines class SqliteExporterFrame
+{
+	private JTextArea			log;	
+	refines SqliteExporterFrame()
+	{
+		setupLogger();
+	}
+		
+	private void setupLogger()
+	{
+        log = new JTextArea(20,40);
+        log.setMargin(new Insets(5,5,5,5));
+        log.setEditable(false);
+        log.setLineWrap( true );
+        log.setWrapStyleWord( true );
+        JScrollPane logScrollPane = new JScrollPane(log);
+        window.add(logScrollPane, BorderLayout.CENTER);
+        logWriter.setUpLogger(log);
+	}	
+}

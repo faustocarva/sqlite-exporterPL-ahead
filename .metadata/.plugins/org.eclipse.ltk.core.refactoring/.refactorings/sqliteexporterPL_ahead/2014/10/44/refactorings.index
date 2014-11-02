@@ -1,0 +1,21 @@
+1414675142749	Copy compilation unit
+1414675155657	Rename resource 'LogWriterConsole.java'
+1414684440590	Move 16 resources to 'JSON'
+1414684443989	Delete element
+1414684453598	Rename resource 'CDL.java'
+1414684474864	Rename resource 'Cookie.java'
+1414684480385	Rename resource 'CookieList.java'
+1414684485404	Rename resource 'HTTP.java'
+1414684490291	Rename resource 'HTTPTokener.java'
+1414684531237	Rename resource 'JSONArray.java'
+1414684536641	Rename resource 'JSONException.java'
+1414684542100	Rename resource 'JSONML.java'
+1414684547758	Rename resource 'JSONObject.java'
+1414684553571	Rename resource 'JSONString.java'
+1414684558533	Rename resource 'JSONStringer.java'
+1414684565263	Rename resource 'JSONTokener.java'
+1414684569649	Rename resource 'JSONWriter.java'
+1414684575211	Rename resource 'Test.java'
+1414684579946	Rename resource 'XML.java'
+1414684591245	Rename resource 'XMLTokener.java'
+1414689495554	Delete elements

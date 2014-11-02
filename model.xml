@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+	<featureModel chosenLayoutAlgorithm="1">
+		<struct>
+			<and abstract="true" mandatory="true" name="sqliteexporterPL">
+				<alt abstract="true" mandatory="true" name="Log">
+					<feature mandatory="true" name="ConsoleLog"/>
+					<feature mandatory="true" name="FileLog"/>
+					<feature mandatory="true" name="WindowLog"/>
+				</alt>
+				<feature mandatory="true" name="Base"/>
+				<or abstract="true" mandatory="true" name="Export">
+					<feature mandatory="true" name="XML"/>
+					<feature mandatory="true" name="JSON"/>
+				</or>
+				<alt abstract="true" mandatory="true" name="UserInterface">
+					<feature mandatory="true" name="GUI"/>
+					<feature abstract="true" mandatory="true" name="CLI"/>
+				</alt>
+			</and>
+		</struct>
+		<constraints/>
+		<calculations Auto="true" Constraints="true" Features="true" Redundant="true" Tautology="true"/>
+		<comments/>
+		<featureOrder userDefined="true">
+			<feature name="Base"/>
+			<feature name="GUI"/>
+			<feature name="ConsoleLog"/>
+			<feature name="FileLog"/>
+			<feature name="WindowLog"/>
+			<feature name="XML"/>
+			<feature name="JSON"/>
+		</featureOrder>
+	</featureModel>

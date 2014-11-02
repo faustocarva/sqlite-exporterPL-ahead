@@ -1,0 +1,82 @@
+/* 
+ * SQLite Converter
+ *
+ * Copyright 2011 Wappworks Studios
+ */
+
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Vector;
+
+
+
+public refines class SqliteConverter {
+
+	private Boolean exportToXml(File xmlFile, SqliteConverterExportConfig config) {
+		logWriter.logAppend("XML export commencing");
+		// Handle the export...
+		try {
+			FileWriter fStream = new FileWriter(xmlFile);
+			BufferedWriter fOut = new BufferedWriter(fStream);
+
+			fOut.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+			fOut.write("<database>\n");
+			exportTablesToXml(fOut, "\t", config);
+			fOut.write("</database>\n");
+
+			fOut.close();
+			fStream.close();
+		} catch (IOException e) {
+			logWriter
+					.logAppend(String
+							.format("I/O error encountered trying to output database to file '%1$s'",
+									xmlFile.getAbsolutePath()));
+			return (false);
+		}
+
+		logWriter.logAppend("XML export complete");
+		return (true);
+	}
+
+	private void exportTablesToXml(Writer fOut, String indent,
+			SqliteConverterExportConfig config) {
+		for (int i = 0; i < tableHandlers.size(); i++)
+		// for( Object tableHandler : tableHandlers )
+		{
+			Object tableHandler = tableHandlers.elementAt(i);
+			try {
+				logWriter.logAppend(String.format(
+						"Exporting contents for table '%1$s'",
+						((SqliteTableHandler) tableHandler).getName()));
+				((SqliteTableHandler) tableHandler).exportTableToXml(fOut,
+						indent, config);
+			} catch (SQLException e) {
+				logWriter.logAppend(String.format(
+						"SQL exception occured trying to export table '%1$s'",
+						((SqliteTableHandler) tableHandler).getName()));
+			} catch (IOException e) {
+				logWriter.logAppend(String.format(
+						"I/O exception occured trying to export table '%1$s'",
+						((SqliteTableHandler) tableHandler).getName()));
+			}
+		}
+	}
+
+	public Boolean export(File outFile, int format,
+			SqliteConverterExportConfig config) {
+		Super(File,int,SqliteConverterExportConfig).export(outFile,format,config);
+		if (format == XML)
+			return (exportToXml(outFile, config));
+		else
+			return false;
+	}
+}

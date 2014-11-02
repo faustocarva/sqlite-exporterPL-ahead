@@ -1,0 +1,13 @@
+/* 
+ * SQLite Exporter primary class
+ *
+ * Copyright 2011 Wappworks Studios
+ */
+
+
+public refines class SqliteExporter
+{
+	refines SqliteExporter() {
+		setLogWriter((LogWriter)(new LogWriterConsole()));		
+	}
+}

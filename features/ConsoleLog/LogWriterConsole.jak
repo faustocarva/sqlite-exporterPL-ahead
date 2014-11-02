@@ -1,0 +1,21 @@
+/* 
+ * Log-to-console Log Writer
+ *
+ * Copyright 2011 Wappworks Studios
+ */
+
+
+public class LogWriterConsole implements LogWriter
+{
+	@Override
+	public void logAppend(String logText)
+	{
+		System.out.println( logText );
+	}
+
+	@Override
+	public void setUpLogger(Object obj)
+	{
+	}
+	
+}

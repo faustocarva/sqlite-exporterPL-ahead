@@ -1,0 +1,71 @@
+/* 
+ * SQLite Table Handler
+ *
+ * Copyright 2011 Wappworks Studios
+ */
+
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+
+
+@SuppressWarnings({ "rawtypes", "unchecked" })
+public class SqliteTableHandler {
+	// private enum FieldType {
+	// INTEGER, FLOAT, STRING
+	// };
+
+	private static final int INTEGER = 1;
+	private static final int FLOAT = 2;
+	private static final int STRING = 3;
+
+	private LogWriter logWriter;
+	private Connection dbConn;
+	private String tableName;
+
+	private Hashtable fieldInfo;
+
+	public SqliteTableHandler(String inTableName, Connection inDbConn,
+			LogWriter inLogWriter) throws SQLException {
+		logWriter = inLogWriter;
+		dbConn = inDbConn;
+		tableName = inTableName;
+		fieldInfo = new Hashtable();
+
+		logWriter.logAppend(String.format(
+				"Reading column names for table '%1$s'", tableName));
+
+		Statement dbStat = dbConn.createStatement();
+		ResultSet rs = dbStat.executeQuery(String.format(
+				"PRAGMA table_info('%1$s');", tableName));
+		try {
+			while (rs.next()) {
+				fieldInfo.put(rs.getString("name"),
+						fieldTypeStringToFieldType(rs.getString("type")));
+			}
+		} finally {
+			rs.close();
+		}
+	}
+
+	public String getName() {
+		return (tableName);
+	}
+
+	private int fieldTypeStringToFieldType(String ident) {
+		if (ident.equals("INTEGER") || ident.equals("NUMERIC"))
+			return (INTEGER);
+		if (ident.equals("FLOAT") || ident.equals("REAL"))
+			return (FLOAT);
+
+		return (STRING);
+	}
+
+}
